@@ -1,0 +1,56 @@
+import readline from 'node:readline'
+
+const SPINNER = ['⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏']
+
+class StartupProgress {
+  #step = 0
+  #total = 0
+  #label = ''
+  #timer = null
+  #frame = 0
+
+  start(totalSteps) {
+    this.#total = totalSteps
+    console.log('\n[boot] initializing fastify...')
+  }
+
+  step(label) {
+    this.#step++
+    this.#label = label
+    this.#frame = 0
+
+    this.#timer = setInterval(() => {
+      const icon = SPINNER[this.#frame++ % SPINNER.length]
+      readline.clearLine(process.stdout, 0)
+      readline.cursorTo(process.stdout, 0)
+      process.stdout.write(
+        `  ${icon}  [${this.#step}/${this.#total}] ${this.#label}`
+      )
+    }, 80)
+  }
+
+  done(label) {
+    this.#clear()
+    console.log(`  ✓  [${this.#step}/${this.#total}] ${label}`)
+  }
+
+  finish(message) {
+    console.log(`\n  ✓  ${message}\n`)
+  }
+
+  fail(message) {
+    this.#clear()
+    console.error(`\n  ✗  ${message}\n`)
+  }
+
+  #clear() {
+    if (this.#timer) {
+      clearInterval(this.#timer)
+      this.#timer = null
+      readline.clearLine(process.stdout, 0)
+      readline.cursorTo(process.stdout, 0)
+    }
+  }
+}
+
+export const progress = new StartupProgress()
